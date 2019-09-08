@@ -10,9 +10,9 @@ Content-Type: text/html
 Content-Length: 172
 
 Fiddler: HTTP/504 gateway timeout.
-
+```
 OR 
-
+```
 StatusCode: 504, ReasonPhrase: 'Gateway Timeout', Version: 1.1, Content: System.Net.Http.StreamContent, Headers:
 {
   Transfer-Encoding: chunked
@@ -28,16 +28,16 @@ StatusCode: 504, ReasonPhrase: 'Gateway Timeout', Version: 1.1, Content: System.
 ```
 
 The Retry handler will fail to retry and throw an exception saying that the request content has been disposed.
-RetryHandler.cs --> SendRetryAsync --> 
+`RetryHandler.cs` --> `SendRetryAsync` --> 
 ```
 // general clone request with internal CloneAsync (see CloneAsync for details) extension method 
 var request = await response.RequestMessage.CloneAsync();
 ```
 seems to be the cause of this exception when debugging the SDK.
 
-If we bypass this method and retry manually, we can eventually reach the HttpProvider --> SendAsync --> SendRequestAsync --> httpClient.SendAsync
+If we bypass this method and retry manually, we can eventually reach the `HttpProvider` --> `SendAsync` --> `SendRequestAsync` --> `httpClient.SendAsync()`
 but we always get a `TaskCanceledException` which is eventually converted to ServiceException with code `timeout`. This behaviour has been introduced in version 1.16.
 Using the version 1.14 of the SDK, the request was retried but since the version 1.15 it would systematically throw a `TaskCanceledException`.
 
-#How to debug this solution
+# How to debug this solution
 Please replace the Graph Token with a valid one in the Resource file before debugging the Solution.
